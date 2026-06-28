@@ -38,7 +38,9 @@ describe("Home (landing page route)", () => {
   });
 
   it("authenticated_visitor_is_redirected_to_app", async () => {
-    mockedGetSession.mockResolvedValue({ userId: "user-1" });
+    mockedGetSession.mockResolvedValue({
+      user: { id: "user-1", email: "ada@example.com", name: "Ada", isAdmin: false },
+    });
 
     await Home();
 
