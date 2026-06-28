@@ -1,0 +1,23 @@
+# Local development Postgres for VideoMax MBA (F02 Authentication System).
+# Bound to host port 5433 to avoid colliding with a default local Postgres on 5432.
+services:
+  postgres:
+    image: postgres:16
+    container_name: videomax-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: videomax
+      POSTGRES_PASSWORD: videomax
+      POSTGRES_DB: videomax
+    ports:
+      - "5433:5432"
+    volumes:
+      - videomax-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U videomax -d videomax"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  videomax-pgdata:
