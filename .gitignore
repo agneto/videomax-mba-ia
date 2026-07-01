@@ -20,6 +20,9 @@
 # production
 /build
 
+# F03 video upload storage (never commit user uploads)
+/storage/
+
 # misc
 .DS_Store
 *.pem

@@ -22,8 +22,36 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   sessions     Session[]
+  videos       Video[]
 
   @@map("user")
+}
+
+// F03 (Video Upload) — canonical video record. Owns the metadata and storage
+// paths consumed by F04 (Library), F07 (Pipeline), F08 (Player), F11
+// (Notifications) and F12 (Admin). `status` is a plain VarChar guarded by a DB
+// CHECK constraint rather than a native enum, so F07 can add stages later
+// without a schema migration. Files live on the local filesystem; the DB only
+// stores paths relative to VIDEO_STORAGE_ROOT.
+model Video {
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  title            String   @db.VarChar(200)
+  description      String   @default("") @db.VarChar(2000)
+  originalFilename String   @map("original_filename") @db.VarChar(255)
+  sizeBytes        BigInt   @map("size_bytes")
+  durationSeconds  Decimal? @map("duration_seconds") @db.Decimal(10, 3)
+  containerFormat  String   @map("container_format") @db.VarChar(8)
+  storagePath      String   @map("storage_path") @db.VarChar(512)
+  thumbnailPath    String?  @map("thumbnail_path") @db.VarChar(512)
+  status           String   @default("validating") @db.VarChar(16)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)], map: "ix_video_user_id_created_at")
+  @@index([status], map: "ix_video_status")
+  @@map("video")
 }
 
 model Session {
